@@ -1,0 +1,668 @@
+{
+  "info": {
+    "_postman_id": "cocos-challenge-local-api",
+    "name": "Cocos Challenge API - Local",
+    "description": "Invoca la API local (http://localhost:8080, variable de coleccion `baseUrl`) con los datos cargados por la migracion V2: usuarios 1-4 (solo el usuario 1 tiene movimientos), instrumentos 1-65 (ACCIONES) y 66 (ARS, MONEDA). Cada request incluye ejemplos de respuesta. Las ordenes modifican la base local; las respuestas guardadas son ilustrativas (ids y fechas varian).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "Portfolio",
+      "item": [
+        {
+          "name": "Portfolio del usuario 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "portfolio"]
+            },
+            "description": "Valor total, pesos disponibles y posiciones del usuario 1 (emiliano@test.com). Con la carga inicial tiene RICH, PAMP y METR."
+          },
+          "response": [
+            {
+              "name": "200 - usuario con posiciones",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"userId\": 1,\n  \"currency\": \"ARS\",\n  \"totalValue\": 904784.00,\n  \"availableCash\": 626400.00,\n  \"positions\": [\n    {\n      \"instrumentId\": 41,\n      \"ticker\": \"RICH\",\n      \"name\": \"Laboratorios Richmond\",\n      \"quantity\": 2,\n      \"marketPrice\": 550.00,\n      \"marketValue\": 1100.00,\n      \"totalReturnPercent\": 0.0000,\n      \"dailyReturnPercent\": 1.2891\n    },\n    {\n      \"instrumentId\": 47,\n      \"ticker\": \"PAMP\",\n      \"name\": \"Pampa Holding S.A.\",\n      \"quantity\": 40,\n      \"marketPrice\": 925.85,\n      \"marketValue\": 37034.00,\n      \"totalReturnPercent\": -0.4462,\n      \"dailyReturnPercent\": 0.4394\n    },\n    {\n      \"instrumentId\": 54,\n      \"ticker\": \"METR\",\n      \"name\": \"MetroGAS S.A.\",\n      \"quantity\": 500,\n      \"marketPrice\": 229.50,\n      \"marketValue\": 114750.00,\n      \"totalReturnPercent\": -8.2000,\n      \"dailyReturnPercent\": -1.0776\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Portfolio del usuario 2 (sin movimientos)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/2/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "2", "portfolio"]
+            },
+            "description": "Los usuarios 2 a 4 no tienen ordenes en la carga inicial: valor total y pesos en cero, sin posiciones."
+          },
+          "response": [
+            {
+              "name": "200 - sin movimientos",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"userId\": 2,\n  \"currency\": \"ARS\",\n  \"totalValue\": 0.00,\n  \"availableCash\": 0.00,\n  \"positions\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Portfolio de un usuario inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/999/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "999", "portfolio"]
+            }
+          },
+          "response": [
+            {
+              "name": "404 - USER_NOT_FOUND",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"USER_NOT_FOUND\",\n  \"message\": \"User 999 not found\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Instrumentos",
+      "item": [
+        {
+          "name": "Buscar por ticker (PAMP)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instruments?q=PAMP&limit=10&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "instruments"],
+              "query": [
+                { "key": "q", "value": "PAMP" },
+                { "key": "limit", "value": "10" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "description": "Coincidencia parcial por ticker o nombre, sin distinguir mayusculas."
+          },
+          "response": [
+            {
+              "name": "200 - una coincidencia",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": 47,\n      \"ticker\": \"PAMP\",\n      \"name\": \"Pampa Holding S.A.\",\n      \"type\": \"ACCIONES\"\n    }\n  ],\n  \"limit\": 10,\n  \"offset\": 0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar por nombre, pagina 2 (banco)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instruments?q=banco&limit=2&offset=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "instruments"],
+              "query": [
+                { "key": "q", "value": "banco" },
+                { "key": "limit", "value": "2" },
+                { "key": "offset", "value": "2" }
+              ]
+            },
+            "description": "Resultados ordenados por (ticker, id): BBAR, BHIP, BMA, BPAT. Con limit=2 y offset=2 se obtiene la segunda pagina."
+          },
+          "response": [
+            {
+              "name": "200 - segunda pagina",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": 31,\n      \"ticker\": \"BMA\",\n      \"name\": \"Banco Macro S.A.\",\n      \"type\": \"ACCIONES\"\n    },\n    {\n      \"id\": 19,\n      \"ticker\": \"BPAT\",\n      \"name\": \"Banco Patagonia\",\n      \"type\": \"ACCIONES\"\n    }\n  ],\n  \"limit\": 2,\n  \"offset\": 2\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar sin resultados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instruments?q=zzz",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "instruments"],
+              "query": [{ "key": "q", "value": "zzz" }]
+            },
+            "description": "limit por defecto 20 y offset por defecto 0."
+          },
+          "response": [
+            {
+              "name": "200 - sin coincidencias",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"items\": [],\n  \"limit\": 20,\n  \"offset\": 0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar con q vacio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/instruments?q=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "instruments"],
+              "query": [{ "key": "q", "value": "" }]
+            }
+          },
+          "response": [
+            {
+              "name": "400 - INVALID_REQUEST",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"INVALID_REQUEST\",\n  \"message\": \"query must not be blank\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ordenes - compra",
+      "item": [
+        {
+          "name": "MARKET BUY por cantidad (GGAL)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "Compra 1 accion de GGAL (instrumento 34) al ultimo close (885.80). La orden se ejecuta y queda FILLED."
+          },
+          "response": [
+            {
+              "name": "201 - FILLED",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 67,\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1,\n  \"price\": 885.80,\n  \"status\": \"FILLED\",\n  \"datetime\": \"2026-11-19T15:00:00.000Z\",\n  \"rejectionReason\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "MARKET BUY por monto en pesos (GGAL)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 5000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "Con $5000 y close 885.80 se compran floor(5000 / 885.80) = 5 acciones; el remanente se descarta. Envia `amount` o `quantity`, nunca ambos."
+          },
+          "response": [
+            {
+              "name": "201 - FILLED (5 acciones)",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 68,\n  \"userId\": 1,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 5,\n  \"price\": 885.80,\n  \"status\": \"FILLED\",\n  \"datetime\": \"2026-11-19T15:01:00.000Z\",\n  \"rejectionReason\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "LIMIT BUY (PAMP a 900.00)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 47,\n  \"side\": \"BUY\",\n  \"type\": \"LIMIT\",\n  \"quantity\": 1,\n  \"limitPrice\": 900.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "Orden limite: queda NEW con el precio indicado y reserva pesos. `limitPrice` es obligatorio en LIMIT y debe omitirse en MARKET. Para cancelarla, usa el `id` devuelto en la carpeta de cancelacion."
+          },
+          "response": [
+            {
+              "name": "201 - NEW",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 69,\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"side\": \"BUY\",\n  \"type\": \"LIMIT\",\n  \"quantity\": 1,\n  \"price\": 900.00,\n  \"status\": \"NEW\",\n  \"datetime\": \"2026-11-19T15:02:00.000Z\",\n  \"rejectionReason\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "MARKET BUY rechazada por fondos (usuario 2)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/2/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "2", "orders"]
+            },
+            "description": "El usuario 2 no tiene pesos. La orden se guarda como REJECTED con rejectionReason INSUFFICIENT_FUNDS; es una decision de negocio, no un error HTTP."
+          },
+          "response": [
+            {
+              "name": "201 - REJECTED por INSUFFICIENT_FUNDS",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 70,\n  \"userId\": 2,\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1,\n  \"price\": 885.80,\n  \"status\": \"REJECTED\",\n  \"datetime\": \"2026-11-19T15:03:00.000Z\",\n  \"rejectionReason\": \"INSUFFICIENT_FUNDS\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ordenes - venta",
+      "item": [
+        {
+          "name": "MARKET SELL por cantidad (PAMP)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 47,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "Vende 1 accion de PAMP (el usuario 1 tiene 40) al ultimo close (925.85)."
+          },
+          "response": [
+            {
+              "name": "201 - FILLED",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 71,\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1,\n  \"price\": 925.85,\n  \"status\": \"FILLED\",\n  \"datetime\": \"2026-11-19T15:04:00.000Z\",\n  \"rejectionReason\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "MARKET SELL por monto en pesos (METR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 54,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"amount\": 1000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "Con $1000 y close 229.50 se venden floor(1000 / 229.50) = 4 acciones de METR (el usuario 1 tiene 500)."
+          },
+          "response": [
+            {
+              "name": "201 - FILLED (4 acciones)",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 72,\n  \"userId\": 1,\n  \"instrumentId\": 54,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"quantity\": 4,\n  \"price\": 229.50,\n  \"status\": \"FILLED\",\n  \"datetime\": \"2026-11-19T15:05:00.000Z\",\n  \"rejectionReason\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "MARKET SELL rechazada por tenencia (PAMP x1000)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 47,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "El usuario 1 no tiene 1000 acciones de PAMP: se guarda REJECTED con rejectionReason INSUFFICIENT_SHARES."
+          },
+          "response": [
+            {
+              "name": "201 - REJECTED por INSUFFICIENT_SHARES",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 73,\n  \"userId\": 1,\n  \"instrumentId\": 47,\n  \"side\": \"SELL\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1000,\n  \"price\": 925.85,\n  \"status\": \"REJECTED\",\n  \"datetime\": \"2026-11-19T15:06:00.000Z\",\n  \"rejectionReason\": \"INSUFFICIENT_SHARES\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ordenes - validaciones y errores",
+      "item": [
+        {
+          "name": "quantity y amount a la vez",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1,\n  \"amount\": 1000\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 - INVALID_ORDER",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"INVALID_ORDER\",\n  \"message\": \"exactly one of quantity or amount is required\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Monto menor al precio de una accion",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"amount\": 100\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 - INVALID_ORDER",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"INVALID_ORDER\",\n  \"message\": \"amount is lower than the price of one share\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Operar el instrumento ARS (MONEDA)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 66,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 - INVALID_ORDER",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"INVALID_ORDER\",\n  \"message\": \"Currency instruments cannot be traded\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Instrumento inexistente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 999,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            }
+          },
+          "response": [
+            {
+              "name": "404 - INSTRUMENT_NOT_FOUND",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"INSTRUMENT_NOT_FOUND\",\n  \"message\": \"Instrument 999 not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Instrumento sin cotizacion (PGR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 3,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            },
+            "description": "PGR (instrumento 3) no tiene datos en marketdata, por lo que no existe precio para una orden MARKET."
+          },
+          "response": [
+            {
+              "name": "409 - MARKET_DATA_UNAVAILABLE",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"MARKET_DATA_UNAVAILABLE\",\n  \"message\": \"No quote for instrument 3\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Usuario inexistente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/999/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "999", "orders"]
+            }
+          },
+          "response": [
+            {
+              "name": "404 - USER_NOT_FOUND",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"USER_NOT_FOUND\",\n  \"message\": \"User 999 not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Campo desconocido en el body",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrumentId\": 34,\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 1,\n  \"foo\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders"]
+            }
+          },
+          "response": [
+            {
+              "name": "400 - INVALID_REQUEST",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"INVALID_REQUEST\",\n  \"message\": \"Request body contains an unknown field\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancelacion de ordenes",
+      "item": [
+        {
+          "name": "Cancelar orden NEW (orden 5, usuario 1)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders/5/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders", "5", "cancel"]
+            },
+            "description": "La orden 5 (BUY LIMIT de LOMA) y la 7 (BUY LIMIT de BMA) del usuario 1 estan NEW en la carga inicial. Tambien sirve el `id` de una orden LIMIT creada antes."
+          },
+          "response": [
+            {
+              "name": "200 - CANCELLED",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 5,\n  \"status\": \"CANCELLED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancelar una orden que no esta NEW (orden 1)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/1/orders/1/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "1", "orders", "1", "cancel"]
+            },
+            "description": "Solo las ordenes NEW se pueden cancelar. Tambien responde 409 si se cancela dos veces la misma orden."
+          },
+          "response": [
+            {
+              "name": "409 - ORDER_NOT_CANCELLABLE",
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"ORDER_NOT_CANCELLABLE\",\n  \"message\": \"Order 1 is not cancellable\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancelar la orden de otro usuario (orden 7, usuario 2)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/2/orders/7/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "2", "orders", "7", "cancel"]
+            }
+          },
+          "response": [
+            {
+              "name": "404 - ORDER_NOT_FOUND",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"ORDER_NOT_FOUND\",\n  \"message\": \"Order 7 not found\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
