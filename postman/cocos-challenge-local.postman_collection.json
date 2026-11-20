@@ -22,7 +22,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "users", "1", "portfolio"]
             },
-            "description": "Valor total, pesos disponibles y posiciones del usuario 1 (emiliano@test.com). Con la carga inicial tiene RICH, PAMP y METR."
+            "description": "Valor total, pesos disponibles y posiciones del usuario 1 (emiliano@test.com). Con la carga inicial tiene BMA (posicion negativa de -10), PAMP y METR."
           },
           "response": [
             {
@@ -31,7 +31,7 @@
               "code": 200,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"userId\": 1,\n  \"currency\": \"ARS\",\n  \"totalValue\": 904784.00,\n  \"availableCash\": 626400.00,\n  \"positions\": [\n    {\n      \"instrumentId\": 41,\n      \"ticker\": \"RICH\",\n      \"name\": \"Laboratorios Richmond\",\n      \"quantity\": 2,\n      \"marketPrice\": 550.00,\n      \"marketValue\": 1100.00,\n      \"totalReturnPercent\": 0.0000,\n      \"dailyReturnPercent\": 1.2891\n    },\n    {\n      \"instrumentId\": 47,\n      \"ticker\": \"PAMP\",\n      \"name\": \"Pampa Holding S.A.\",\n      \"quantity\": 40,\n      \"marketPrice\": 925.85,\n      \"marketValue\": 37034.00,\n      \"totalReturnPercent\": -0.4462,\n      \"dailyReturnPercent\": 0.4394\n    },\n    {\n      \"instrumentId\": 54,\n      \"ticker\": \"METR\",\n      \"name\": \"MetroGAS S.A.\",\n      \"quantity\": 500,\n      \"marketPrice\": 229.50,\n      \"marketValue\": 114750.00,\n      \"totalReturnPercent\": -8.2000,\n      \"dailyReturnPercent\": -1.0776\n    }\n  ]\n}"
+              "body": "{\n  \"userId\": 1,\n  \"currency\": \"ARS\",\n  \"totalValue\": 889756.00,\n  \"availableCash\": 627500.00,\n  \"positions\": [\n    {\n      \"instrumentId\": 31,\n      \"ticker\": \"BMA\",\n      \"name\": \"Banco Macro S.A.\",\n      \"quantity\": -10,\n      \"marketPrice\": 1502.80,\n      \"marketValue\": -15028.00,\n      \"totalReturnPercent\": 2.4156,\n      \"dailyReturnPercent\": -1.1478\n    },\n    {\n      \"instrumentId\": 47,\n      \"ticker\": \"PAMP\",\n      \"name\": \"Pampa Holding S.A.\",\n      \"quantity\": 40,\n      \"marketPrice\": 925.85,\n      \"marketValue\": 37034.00,\n      \"totalReturnPercent\": -0.4462,\n      \"dailyReturnPercent\": 0.4394\n    },\n    {\n      \"instrumentId\": 54,\n      \"ticker\": \"METR\",\n      \"name\": \"MetroGAS S.A.\",\n      \"quantity\": 500,\n      \"marketPrice\": 229.50,\n      \"marketValue\": 114750.00,\n      \"totalReturnPercent\": -8.2000,\n      \"dailyReturnPercent\": -1.0776\n    }\n  ]\n}"
             }
           ]
         },

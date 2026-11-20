@@ -79,6 +79,24 @@ class FilledBuyStrategyTest {
     }
 
     @Test
+    @DisplayName("Buying back a short position reduces its cost and can close it")
+    void givenShortHolding_whenBuying_thenCostIsReducedOrCleared() {
+        // Given
+        HoldingModel shortHolding = HoldingModel.builder().instrumentId(2).quantity(new BigDecimal("-10"))
+                .remainingCost(new BigDecimal("-800")).reservedShares(BigDecimal.ZERO).build();
+
+        // When
+        PositionsModel partial = strategy.apply(order("4", "80"), state(Map.of(2, shortHolding)));
+        PositionsModel closed = strategy.apply(order("10", "80"), state(Map.of(2, shortHolding)));
+        PositionsModel crossed = strategy.apply(order("12", "80"), state(Map.of(2, shortHolding)));
+
+        // Then
+        assertThat(partial.holdingOf(2).remainingCost()).as("Proportional short cost").isEqualByComparingTo("-480");
+        assertThat(closed.holdingOf(2).remainingCost()).as("Closed position has no cost").isZero();
+        assertThat(crossed.holdingOf(2).remainingCost()).as("New long cost").isEqualByComparingTo("160");
+    }
+
+    @Test
     @DisplayName("Fails on a persisted order with fractional shares")
     void givenFractionalShares_whenApplying_thenDataIsInconsistent() {
         // Given

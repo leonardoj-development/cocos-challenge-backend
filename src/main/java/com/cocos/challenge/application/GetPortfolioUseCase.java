@@ -40,7 +40,7 @@ public class GetPortfolioUseCase implements GetPortfolioPort {
         List<OrderModel> orders = this.orders.findByUserOrderedByDatetime(userId);
         PositionsModel positions = calculatePositionsContext.apply(orders);
         List<Integer> heldIds = positions.holdings().values().stream()
-                .filter(holding -> holding.quantity().signum() > 0)
+                .filter(holding -> holding.quantity().signum() != 0)
                 .map(HoldingModel::instrumentId)
                 .toList();
         Map<Integer, InstrumentModel> heldInstruments = instruments.findByIds(heldIds);
@@ -54,7 +54,7 @@ public class GetPortfolioUseCase implements GetPortfolioPort {
         BigDecimal totalValue = positions.settledCash();
 
         List<HoldingModel> held = positions.holdings().values().stream()
-                .filter(holding -> holding.quantity().signum() > 0)
+                .filter(holding -> holding.quantity().signum() != 0)
                 .sorted(Comparator.comparingInt(HoldingModel::instrumentId))
                 .toList();
 
@@ -68,14 +68,12 @@ public class GetPortfolioUseCase implements GetPortfolioPort {
                 throw new MarketDataUnavailableException(
                         "No valid quote for instrument " + holding.instrumentId());
             }
-            if (holding.remainingCost().signum() <= 0) {
-                throw new InconsistentDataException(
-                        "Non-positive remaining cost for instrument " + holding.instrumentId());
-            }
 
             BigDecimal marketValue = holding.quantity().multiply(quote.close());
-            BigDecimal totalReturn = marketValue.subtract(holding.remainingCost())
-                    .divide(holding.remainingCost(), MathContext.DECIMAL128).multiply(HUNDRED);
+            BigDecimal totalReturn = holding.remainingCost().signum() == 0
+                    ? BigDecimal.ZERO
+                    : marketValue.subtract(holding.remainingCost())
+                    .divide(holding.remainingCost().abs(), MathContext.DECIMAL128).multiply(HUNDRED);
             BigDecimal dailyReturn = quote.close().subtract(quote.previousClose())
                     .divide(quote.previousClose(), MathContext.DECIMAL128).multiply(HUNDRED);
 

@@ -134,6 +134,6 @@ Colección con todos los endpoints de la API: [cocos-challenge-local.postman_col
 
 | Documento | Contenido |
 |-----------|-----------|
-| [docs/backend-challenge.md](docs/backend-challenge.md) | Enunciado del challenge. |
+| [link](https://github.com/cocoscap/cocos-challenge/blob/main/backend-challenge.md) | Enunciado del challenge. |
 | [docs/fundamentos.md](docs/fundamentos.md) | Suposiciones y decisiones de diseño (arquitectura, Strategy, concurrencia, migraciones, testing). |
 | [docs/notas-para-comunicar.md](docs/notas-para-comunicar.md) | Observaciones y casos límite a comunicar. |

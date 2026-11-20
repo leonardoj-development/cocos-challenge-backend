@@ -5,10 +5,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -27,6 +31,9 @@ class OrderApiIT extends AbstractPersistenceIT {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private DataSource dataSource;
 
     private static String marketBody(String side, String field, String value) {
         return "{\"instrumentId\":" + ASSET + ",\"side\":\"" + side + "\",\"type\":\"MARKET\",\"" + field + "\":"
@@ -441,6 +448,23 @@ class OrderApiIT extends AbstractPersistenceIT {
                 .andExpect(described("JSON $.positions[0].marketValue value 800.00000000", jsonPath("$.positions[0].marketValue").value(800.00000000)))
                 .andExpect(described("JSON $.positions[0].totalReturnPercent value 14.2857", jsonPath("$.positions[0].totalReturnPercent").value(14.2857)))
                 .andExpect(described("JSON $.positions[0].dailyReturnPercent value 6.6667", jsonPath("$.positions[0].dailyReturnPercent").value(6.6667)));
+    }
+
+    @Test
+    @DisplayName("Shows the negative BMA position of the untouched reference data instead of hiding it or failing")
+    void givenReferenceData_whenGettingPortfolio_thenNegativePositionIsReported() throws Exception {
+        // Given
+        jdbc.execute("TRUNCATE TABLE marketdata, orders, instruments, users RESTART IDENTITY CASCADE");
+        try (Connection connection = dataSource.getConnection()) {
+            ScriptUtils.executeSqlScript(connection, new ClassPathResource("db/migration/V2__load_reference_data.sql"));
+        }
+
+        // When / Then
+        portfolio(1)
+                .andExpect(described("BMA is reported",
+                        jsonPath("$.positions[?(@.ticker == 'BMA')].quantity").value(-10)))
+                .andExpect(described("BMA has a negative market value",
+                        jsonPath("$.positions[?(@.ticker == 'BMA')].marketValue").value(-15028.0)));
     }
 
     private ResultActions placeOrder(int userId, String body) throws Exception {

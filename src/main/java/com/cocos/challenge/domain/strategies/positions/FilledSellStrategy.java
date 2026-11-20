@@ -23,9 +23,15 @@ public class FilledSellStrategy implements CalculatePositionsStrategy {
         order.requireValidTrade();
         HoldingModel holding = state.holdingOf(order.instrumentId());
         BigDecimal remaining = holding.quantity().subtract(order.size());
-        BigDecimal remainingCost = remaining.signum() == 0
-                ? BigDecimal.ZERO
-                : holding.remainingCost().multiply(remaining).divide(holding.quantity(), MathContext.DECIMAL128);
+        BigDecimal remainingCost;
+        if (remaining.signum() == 0) {
+            remainingCost = BigDecimal.ZERO;
+        } else if (holding.quantity().signum() == 0) {
+            remainingCost = order.size().multiply(order.price()).negate();
+        } else {
+            remainingCost = holding.remainingCost().multiply(remaining)
+                    .divide(holding.quantity(), MathContext.DECIMAL128);
+        }
         HoldingModel updatedHolding = HoldingModel.builder()
                 .instrumentId(order.instrumentId())
                 .quantity(remaining)

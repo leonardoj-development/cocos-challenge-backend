@@ -8,6 +8,7 @@ import com.cocos.challenge.domain.models.enums.SideEnum;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 @Component
 public class FilledBuyStrategy implements CalculatePositionsStrategy {
@@ -22,10 +23,22 @@ public class FilledBuyStrategy implements CalculatePositionsStrategy {
         order.requireValidTrade();
         HoldingModel holding = state.holdingOf(order.instrumentId());
         BigDecimal value = order.size().multiply(order.price());
+        BigDecimal quantity = holding.quantity().add(order.size());
+        BigDecimal remainingCost;
+        if (holding.quantity().signum() >= 0) {
+            remainingCost = holding.remainingCost().add(value);
+        } else if (quantity.signum() == 0) {
+            remainingCost = BigDecimal.ZERO;
+        } else if (quantity.signum() < 0) {
+            remainingCost = holding.remainingCost().multiply(quantity)
+                    .divide(holding.quantity(), MathContext.DECIMAL128);
+        } else {
+            remainingCost = quantity.multiply(order.price());
+        }
         HoldingModel updatedHolding = HoldingModel.builder()
                 .instrumentId(order.instrumentId())
-                .quantity(holding.quantity().add(order.size()))
-                .remainingCost(holding.remainingCost().add(value))
+                .quantity(quantity)
+                .remainingCost(remainingCost)
                 .reservedShares(holding.reservedShares())
                 .build();
         return state.withCashAndHolding(state.settledCash().subtract(value), order.instrumentId(), updatedHolding);

@@ -80,6 +80,38 @@ class FilledSellStrategyTest {
     }
 
     @Test
+    @DisplayName("Sells without prior shares and keeps a negative cost")
+    void givenNoShares_whenSelling_thenPositionIsNegative() {
+        // Given
+        HoldingModel empty = HoldingModel.builder().instrumentId(2).quantity(BigDecimal.ZERO)
+                .remainingCost(BigDecimal.ZERO).reservedShares(BigDecimal.ZERO).build();
+        PositionsModel state = PositionsModel.builder().settledCash(BigDecimal.ZERO).reservedCash(BigDecimal.ZERO)
+                .holdings(Map.of(2, empty)).build();
+
+        // When
+        PositionsModel result = strategy.apply(order("5", "90"), state);
+
+        // Then
+        assertThat(result.holdingOf(2).quantity()).as("Short position").isEqualByComparingTo("-5");
+        assertThat(result.holdingOf(2).remainingCost()).as("Negative cost").isEqualByComparingTo("-450");
+        assertThat(result.settledCash()).as("Proceeds are received").isEqualByComparingTo("450");
+    }
+
+    @Test
+    @DisplayName("Sells more than the holding and goes negative with proportional cost")
+    void givenLargerSale_whenApplying_thenPositionIsNegative() {
+        // Given
+        OrderModel order = order("15", "90");
+
+        // When
+        PositionsModel result = strategy.apply(order, state());
+
+        // Then
+        assertThat(result.holdingOf(2).quantity()).as("Short position").isEqualByComparingTo("-5");
+        assertThat(result.holdingOf(2).remainingCost()).as("Cost keeps the average").isEqualByComparingTo("-400");
+    }
+
+    @Test
     @DisplayName("Fails on a persisted order with a missing price")
     void givenMissingPrice_whenApplying_thenDataIsInconsistent() {
         // Given

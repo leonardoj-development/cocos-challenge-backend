@@ -189,16 +189,34 @@ class GetPortfolioUseCaseTest {
     }
 
     @Test
-    @DisplayName("Fails when the remaining cost is not positive")
-    void givenNonPositiveCost_whenExecuting_thenDataIsInconsistent() {
+    @DisplayName("Reports a negative position and discounts it from the total")
+    void givenNegativeHolding_whenExecuting_thenItIsReportedAndDiscounted() {
+        // Given
+        when(calculatePositionsContext.apply(any())).thenReturn(positions("1000", "0", holding("-10", "-800")));
+        when(marketData.findLatest(any(Collection.class))).thenReturn(Map.of(ASSET, quote("88", "80")));
+
+        // When
+        PortfolioModel portfolio = useCase.execute(USER_ID);
+
+        // Then
+        PortfolioPositionModel position = portfolio.positions().get(0);
+        assertThat(position.quantity()).as("The negative quantity is shown").isEqualByComparingTo("-10");
+        assertThat(position.marketValue()).as("Negative market value").isEqualByComparingTo("-880");
+        assertThat(position.totalReturnPercent()).as("-880 against a cost of -800").isEqualByComparingTo("-10");
+        assertThat(portfolio.totalValue()).as("The position is discounted").isEqualByComparingTo("120");
+    }
+
+    @Test
+    @DisplayName("Reports a zero return when the remaining cost is zero")
+    void givenZeroCost_whenExecuting_thenReturnIsZero() {
         // Given
         when(calculatePositionsContext.apply(any())).thenReturn(positions("0", "0", holding("1", "0")));
         when(marketData.findLatest(any(Collection.class))).thenReturn(Map.of(ASSET, quote("10", "10")));
 
         // When
-        Throwable failure = catchThrowable(() -> useCase.execute(USER_ID));
+        PortfolioModel portfolio = useCase.execute(USER_ID);
 
         // Then
-        assertThat(failure).as("The cost must be positive").isInstanceOf(InconsistentDataException.class);
+        assertThat(portfolio.positions().get(0).totalReturnPercent()).as("No division by zero").isZero();
     }
 }
